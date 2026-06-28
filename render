@@ -1,0 +1,45 @@
+services:
+  # === FRONTEND (Static Site) ===
+  - type: web
+    name: attenda-frontend
+    env: static
+    rootDir: .
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_BASE44_APP_ID
+        sync: false
+      - key: VITE_BASE44_APP_BASE_URL
+        sync: false
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: attenda-backend
+          type: web
+          property: host
+
+  # === BACKEND (Node.js API) ===
+  - type: web
+    name: attenda-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: attenda-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://attenda-frontend.onrender.com   # ← Change this after frontend deploy
+
+databases:
+  - name: attenda-db
+    databaseName: attenda
+    user: attenda
+    
